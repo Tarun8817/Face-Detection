@@ -1,7 +1,7 @@
 const userModel = require("../models/user.models.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const blacklistModel = require("../models/blackList.model.js")
 async function registerUser(req, res) {
     try {
         const { username, email, password } = req.body;
@@ -35,7 +35,12 @@ async function registerUser(req, res) {
             }
         );
 
-        res.cookie("token", token);
+res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 3 * 24 * 60 * 60 * 1000
+});
 
         res.status(201).json({
             message: "User registered successfully",
@@ -60,7 +65,7 @@ async function loginUser(req, res) {
 
         const user = await userModel.findOne({
             $or: [{ email }, { username }],
-        });
+        }).select("+password");
 
         if (!user) {
             return res.status(400).json({
@@ -87,7 +92,12 @@ async function loginUser(req, res) {
             }
         );
 
-        res.cookie("token", token);
+        res.cookie("token", token, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict",
+    maxAge: 3 * 24 * 60 * 60 * 1000
+});
 
         res.status(200).json({
             message: "Login successful",
@@ -106,7 +116,46 @@ async function loginUser(req, res) {
     }
 }
 
+async function getMe(req, res) {
+    try {
+        const user = await userModel
+            .findById(req.user.id)
+            .select("-password");
+
+        if (!user) {
+            return res.status(404).json({
+                message: "User not found",
+            });
+        }
+
+        res.status(200).json({
+            message: "User fetched successfully",
+            user,
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: error.message,
+        });
+    }
+}
+
+async function logoutUser(req,res){
+    const token = req.cookies.token
+
+    res.clearCookie("token")
+    await blacklistModel.create({
+        token
+    })
+
+    res.status(200).json({
+        message:"Logout successfully"
+    })
+}
+
 module.exports = {
     registerUser,
     loginUser,
+    getMe,
+    logoutUser
 };
