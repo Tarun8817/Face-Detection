@@ -2,6 +2,10 @@ const userModel = require("../models/user.models.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const blacklistModel = require("../models/blackList.model.js")
+const redis = require("../config/cache.js");
+
+
+
 async function registerUser(req, res) {
     try {
         const { username, email, password } = req.body;
@@ -140,17 +144,32 @@ async function getMe(req, res) {
     }
 }
 
-async function logoutUser(req,res){
-    const token = req.cookies.token
+async function logoutUser(req, res) {
+    try {
+        const token = req.cookies.token;
 
-    res.clearCookie("token")
-    await blacklistModel.create({
-        token
-    })
+        if (!token) {
+            return res.status(401).json({
+                message: "No token found"
+            });
+        }
 
-    res.status(200).json({
-        message:"Logout successfully"
-    })
+        // Blacklist token for 1 hour
+        await redis.set(token, "logout", "EX", 60 * 60);
+
+        // Clear cookie
+        res.clearCookie("token");
+
+        res.status(200).json({
+            message: "Logout successfully"
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
 }
 
 module.exports = {
