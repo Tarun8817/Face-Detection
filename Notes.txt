@@ -1,0 +1,66 @@
+1. UI Layer (Presentation Layer)
+Responsibility:
+Handles UI, pages, components, and navigation.
+
+Folders:
+pages/
+components/
+layouts/
+routes/
+
+Definition:
+“UI layer handles presentation and user interaction.”
+
+--------------------------------------------------
+
+2. Hooks Layer (Business Logic Layer)
+Responsibility:
+Handles reusable business logic, API logic, and custom hooks.
+
+Folders:
+hooks/
+
+Example Files:
+useAuth.js
+usePosts.js
+useSocket.js
+
+Definition:
+“Hooks layer separates logic from UI using custom hooks.”
+
+--------------------------------------------------
+
+3. State Layer (Global State Layer)
+Responsibility:
+Manages global/shared application state.
+
+Folders:
+context/
+store/
+redux/
+
+Example Files:
+AuthContext.jsx
+PostContext.jsx
+store.js
+
+Definition:
+“State layer acts as a single source of truth.”
+
+--------------------------------------------------
+
+4. API Layer (Service Layer)
+Responsibility:
+Handles backend communication and API requests.
+
+Folders:
+services/
+api/
+
+Example Files:
+auth.js
+post.js
+axios.js
+
+Definition:
+“API layer manages backend communication.”
